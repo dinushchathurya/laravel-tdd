@@ -36,6 +36,35 @@ class AuthController extends Controller
         return response([ 
             'user' => $user, 
             'access_token' => $accessToken
+        ], 201);
+    }
+
+    public function login(Request $request)
+    {
+        $data = $request->all();
+
+        $validator = Validator::make($data, [
+            'email' => 'required|email',
+            'password' => 'required|min:6'
+        ]);
+
+        if($validator->fails()){
+            return response([
+                'error' => $validator->errors()
+            ], 401);
+        }
+
+        if (!auth()->attempt($data)) {
+            return response([
+                'message' => 'Login credentials are invaild'
+            ], 401);
+        }
+
+        $accessToken = auth()->user()->createToken('authToken')->accessToken;
+
+        return response([
+            'access_token' => $accessToken
         ], 200);
+
     }
 }
